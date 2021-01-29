@@ -1,0 +1,122 @@
+var cloneLayer = new ol.layer.Vector({
+  source: new ol.source.Vector({
+  }),
+  name: "克隆图层",
+  zIndex: 14,
+  visible: true,
+});
+map.addLayer(cloneLayer);
+function flashPolygonFeature(options) {
+  
+  var feature=options.feature;//传入要素
+  var rgbcolor=options.rgbcolor;//符号颜色
+  var isFlash=options.isFlash;//是否闪烁
+  var text=options.text;//标注内容
+  var time=options.time;//闪烁间隔时间
+  var isClear=options.isClear;//是否先清除之前要素
+
+  if(isClear){
+    window.clearInterval(intervalFlash);
+    cloneLayer.getSource().clear();
+  }
+  var cloneFeature = feature.clone();
+  cloneLayer.getSource().addFeature(cloneFeature);
+  var opacity = 0;
+  var flashAdd = true;
+  function setStyleYesFlash() {
+    if (flashAdd) {
+      opacity = opacity + 0.7;
+      if (opacity > 1) {
+        flashAdd = false;
+      }
+
+    }
+    if (!flashAdd) {
+      opacity = opacity - 0.1;
+      if (opacity < 0) {
+        flashAdd = true;
+      }
+    }
+    var symbolStyle = new ol.style.Style({
+      //填充色
+      fill: new ol.style.Fill({
+        color:
+          "rgba(" + rgbcolor + ", " + opacity + ")",
+      }),
+      //边线颜色
+      stroke: new ol.style.Stroke({
+        color: "rgba(" + rgbcolor + ", " + opacity + ")",
+        width: 10,
+      }),
+
+      text: new ol.style.Text({
+        //文本样式
+        text: (text == undefined) ? "" : text,
+        offsetX: 40,
+        offsetY: 8,
+        // offsetX: 0,
+        // offsetY: 0,
+        textAlign: "center", //位置
+        textBaseline: "bottom", //基准线
+        font: "normal 14px 微软雅黑",
+        fill: new ol.style.Fill({
+          color: "#000",
+        }),
+        stroke: new ol.style.Stroke({
+          color: "#000",
+          width: 0.8,
+        }),
+      }),
+    });
+    cloneFeature.setStyle(symbolStyle);
+  }
+  function setStyleNoFlash() {
+    var symbolStyleNoFlash = new ol.style.Style({
+      //填充色
+      fill: new ol.style.Fill({
+        color:
+          "rgba(" + rgbcolor + ", " + 1 + ")",
+      }),
+      //边线颜色
+      stroke: new ol.style.Stroke({
+        color: "rgba(" + rgbcolor + ", " + 1 + ")",
+        width: 3,
+      }),
+
+      text: new ol.style.Text({
+        //文本样式
+        text: (text == undefined) ? "" : text,
+        offsetX: 40,
+        offsetY: 8,
+        // offsetX: 0,
+        // offsetY: 0,
+        textAlign: "center", //位置
+        textBaseline: "bottom", //基准线
+        font: "normal 14px 微软雅黑",
+        fill: new ol.style.Fill({
+          color: "#000",
+        }),
+        stroke: new ol.style.Stroke({
+          color: "#000",
+          width: 0.8,
+        }),
+      }),
+    });
+    cloneFeature.setStyle(symbolStyleNoFlash);
+  }
+  if (isFlash) {
+    setStyleYesFlash()
+  }
+  else {
+    intervalFlash = setInterval(function () { setStyleYesFlash() }, (time == undefined) ? 30 : time);//调整闪烁频率
+  }
+}
+
+flashPolygonFeature({
+  feature:feature, 
+  rgbcolor:"220,70,60", 
+  isFlash:true,
+  text:"标注",
+  time:"30",
+  isClear:true,
+})
